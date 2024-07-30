@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fries</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Plateno Cinema Cafeteria</h1>
+    <nav>
+      <ul>
+        
+<li><a href="beverages.html">Beverages</a></li>
+
+        <li><a href="snacks.html">Snacks</a></li>
+        <li><a href="popcorn.html">Popcorn</a></li>
+        <li><a href="fries.html">Fries</a></li>
+      </ul>
+    </nav>
+  </header>
+  
+  <div class="container">
+    <h2>Fries</h2>
+    <ul class="fries-list">
+      <li class="item" data-price="150">French fries</li>
+      <li class="item" data-price="160">Chicken Popcorn</li>
+      <li class="item" data-price="170">Chicken Nuggets</li>
+      <li class="item" data-price="140">veg fingers</li>
+    </ul>
+  </div>
+
+  <div class="purchase-info">
+    <h3>Items to Purchase</h3>
+    <ul id="item-list"></ul>
+    <p id="total-price">Total Price: ₹0.00</p>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+  // Initialize the list of items from localStorage or empty array
+  let itemList = JSON.parse(localStorage.getItem('itemList')) || [];
+  // Initialize total price from localStorage or 0, set to 0 if itemList is empty
+  let totalPrice = itemList.length ? parseFloat(localStorage.getItem('totalPrice')) || 0 : 0;
+
+  // Function to add item to the list
+  function addItem(item, price) {
+    // Check if the item is already in the list
+    const index = itemList.findIndex(obj => obj.item === item);
+    if (index !== -1) {
+      // If the item is already in the list, increase its quantity
+      itemList[index].quantity++;
+      itemList[index].totalPrice += price;
+    } else {
+      // If the item is not in the list, add it
+      itemList.push({ item, price, quantity: 1, totalPrice: price });
+    }
+    totalPrice += price;
+    updateList();
+    updateTotal();
+    // Save updated list and total price to localStorage
+    localStorage.setItem('itemList', JSON.stringify(itemList));
+    localStorage.setItem('totalPrice', totalPrice.toFixed(2));
+  }
+
+  // Function to decrease item quantity
+  function decreaseItem(index) {
+    if (itemList[index].quantity > 1) {
+      // If quantity is more than 1, decrease it
+      itemList[index].quantity--;
+      itemList[index].totalPrice -= itemList[index].price;
+      totalPrice -= itemList[index].price;
+    } else {
+      // If quantity is 1, remove the item from the list
+      removeItem(index);
+      return;
+    }
+    updateList();
+    updateTotal();
+    // Save updated list and total price to localStorage
+    localStorage.setItem('itemList', JSON.stringify(itemList));
+    localStorage.setItem('totalPrice', totalPrice.toFixed(2));
+  }
+
+  // Function to remove item from the list
+  function removeItem(index) {
+    totalPrice -= itemList[index].totalPrice; // Subtract the total price of the item
+    itemList.splice(index, 1);
+    updateList();
+    updateTotal();
+    // Save updated list and total price to localStorage
+    localStorage.setItem('itemList', JSON.stringify(itemList));
+    localStorage.setItem('totalPrice', totalPrice.toFixed(2));
+  }
+
+  // Function to update the displayed list
+  function updateList() {
+    const listElement = document.getElementById('item-list');
+    listElement.innerHTML = '';
+    itemList.forEach((item, index) => {
+      const listItem = document.createElement('li');
+      listItem.textContent = `${item.item} x${item.quantity}: ₹${item.totalPrice.toFixed(2)}`;
+
+      // Create Decrease Button
+      const decreaseButton = document.createElement('button');
+      decreaseButton.textContent = 'Decrease';
+      decreaseButton.addEventListener('click', () => {
+        decreaseItem(index);
+      });
+
+      // Create Delete Button
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = 'Delete';
+      deleteButton.addEventListener('click', () => {
+        removeItem(index);
+      });
+
+      listItem.appendChild(decreaseButton);
+      listItem.appendChild(deleteButton);
+      listElement.appendChild(listItem);
+    });
+  }
+
+  // Function to update the displayed total price
+  function updateTotal() {
+    document.getElementById('total-price').textContent = `Total Price: ₹${totalPrice.toFixed(2)}`;
+  }
+
+  // Add event listener to each item
+  const items = document.querySelectorAll('.item');
+  items.forEach(item => {
+    item.addEventListener('click', function () {
+      const itemName = this.textContent;
+      const itemPrice = parseFloat(this.dataset.price);
+      addItem(itemName, itemPrice);
+    });
+  });
+
+  // Load the list and total price when the page loads
+  updateList();
+  updateTotal();
+});
+  </script>
+</body>
+</html>
